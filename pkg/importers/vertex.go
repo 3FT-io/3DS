@@ -54,7 +54,7 @@ func (vi *VertexImporter) ImportFromOBJ(reader io.Reader) error {
 			if len(fields) < 4 {
 				return errors.New("invalid vertex position")
 			}
-			pos, err := parseVector3(fields[1:4])
+			pos, err := ParseVector3(fields[1:4])
 			if err != nil {
 				return fmt.Errorf("failed to parse vertex position: %w", err)
 			}
@@ -64,7 +64,7 @@ func (vi *VertexImporter) ImportFromOBJ(reader io.Reader) error {
 			if len(fields) < 4 {
 				return errors.New("invalid vertex normal")
 			}
-			normal, err := parseVector3(fields[1:4])
+			normal, err := ParseVector3(fields[1:4])
 			if err != nil {
 				return fmt.Errorf("failed to parse vertex normal: %w", err)
 			}
@@ -339,4 +339,21 @@ func extractFloatArray(data []byte) []float64 {
 	}
 
 	return result
+}
+
+// ParseVector3 converts string values to a 3D vector
+func ParseVector3(values []string) ([3]float64, error) {
+	if len(values) < 3 {
+		return [3]float64{}, errors.New("not enough values for vector3")
+	}
+
+	var result [3]float64
+	for i := 0; i < 3; i++ {
+		val, err := strconv.ParseFloat(values[i], 64)
+		if err != nil {
+			return [3]float64{}, err
+		}
+		result[i] = val
+	}
+	return result, nil
 }
