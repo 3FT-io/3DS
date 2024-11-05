@@ -153,7 +153,7 @@ func createTestFBXMaterial() []byte {
 	// Reuse the FBX header and version from vertex test
 	header := []byte("Kaydara FBX Binary  ")
 	header = append(header, []byte{0x00, 0x1A, 0x00}...)
-	version := []byte{0x7C, 0x1B, 0x00, 0x00}
+	version := []byte{0xE8, 0x1C, 0x00, 0x00}
 
 	// Create material node data
 	materialData := []byte{
@@ -163,8 +163,6 @@ func createTestFBXMaterial() []byte {
 		0x00, 0x00, 0x00, 0x00, // propertyListLen
 		0x08, // nameLen
 		'M', 'a', 't', 'e', 'r', 'i', 'a', 'l',
-		// Material properties follow...
-		// (Add specific material property data here)
 	}
 
 	// Combine all parts

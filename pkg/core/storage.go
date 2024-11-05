@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -242,4 +243,64 @@ func (s *Storage) GetModel(ctx context.Context, modelID string) (*ModelMetadata,
 		return nil, err
 	}
 	return metadata, nil
+}
+
+// StoreObject stores an object's metadata
+func (s *Storage) StoreObject(ctx context.Context, obj *Object) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if obj.ID == "" {
+		obj.ID = generateUUID()
+	}
+
+	// Create object directory
+	objPath := filepath.Join(s.basePath, "objects", obj.ID)
+	if err := os.MkdirAll(objPath, 0755); err != nil {
+		return err
+	}
+
+	// Store metadata as JSON file
+	metadataPath := filepath.Join(objPath, "metadata.json")
+	data, err := json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(metadataPath, data, 0644); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetObject retrieves an object's metadata by ID
+func (s *Storage) GetObject(ctx context.Context, id string) (*Object, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	objPath := filepath.Join(s.basePath, "objects", id, "metadata.json")
+	data, err := os.ReadFile(objPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("object not found: %s", id)
+		}
+		return nil, err
+	}
+
+	var obj Object
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return nil, err
+	}
+
+	return &obj, nil
+}
+
+// DeleteObject removes an object's metadata
+func (s *Storage) DeleteObject(ctx context.Context, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	objPath := filepath.Join(s.basePath, "objects", id)
+	return os.RemoveAll(objPath)
 }

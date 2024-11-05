@@ -88,3 +88,8 @@ func encodeVertex(vertex importers.Vertex) []byte {
 	binary.LittleEndian.PutUint64(data[56:64], math.Float64bits(vertex.TexCoords[1]))
 	return data
 }
+
+// DeleteBlock removes a block from storage
+func (s *Service) DeleteBlock(ctx context.Context, hash string) error {
+	return s.store.DeleteBlock(ctx, hash)
+}
